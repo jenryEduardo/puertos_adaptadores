@@ -5,7 +5,7 @@ import (
 	
 	"ejemplo/practica/Users/infraestructure/routes"
 )
-
+//chuck en la solicitud es long pulling
 
 func main(){
 		routes.RoutesUser()

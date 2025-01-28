@@ -15,4 +15,8 @@ func RoutesUser(){
 		})
 	})
 	r.Run()
-}
+}	
+
+
+
+///el server se inicia en main aqui solo va la ruta y su handler

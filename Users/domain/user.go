@@ -7,9 +7,6 @@ type User struct {
 	Num_tel int16
 }
 
+//crear un archivo donde se almacenen los repository
+
 //definimos el repositorio del modelo (puertos)
-type UserRepository interface {
-	save(user *User) error
-	findById(id string)(*User,error)
-	findAll()([]*User,error)
-}

@@ -1,8 +1,8 @@
 package infraestructure
 
 import (
-	"ejemplo/practica/src/core"
 	"ejemplo/practica/src/Users/domain"
+	"ejemplo/practica/src/core"
 )
 
 type MySQLRepository struct {
@@ -17,6 +17,22 @@ func NewMySQLRepository() *MySQLRepository {
 func (r *MySQLRepository) Save(p *domain.Product) error {
 	query := "INSERT INTO Product (nombre, precio) VALUES (?, ?)"
 	_, err := r.conn.DB.Exec(query, p.Nombre, p.Precio)
+	return err
+}
+
+func (r *MySQLRepository) Delete(p string)error{
+	nombre :=p
+	query := "DELETE FROM Product WHERE nombre = ?"
+	_,err :=r.conn.DB.Exec(query,nombre)
+	return err
+}
+
+func (r *MySQLRepository) Update(id int,p *domain.Product)error{
+	query := "UPDATE Product SET nombre = ?, precio = ? WHERE id = ?"
+    _, err := r.conn.DB.Exec(query, p.Nombre, p.Precio,id)
+    if err != nil {
+        return err
+    }
 	return err
 }
 

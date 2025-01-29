@@ -13,7 +13,7 @@ func GetProductHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "metodo no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-
+	
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewGetProduct(repo)
 	products, err := useCase.Execute()

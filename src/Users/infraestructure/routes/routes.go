@@ -7,5 +7,7 @@ import (
 
 func SetupRoutes() {
 	http.HandleFunc("/products", controllers.CreateProductHandler)
-	http.HandleFunc("/productos", controllers.GetProductHandler)
+	http.HandleFunc("/view-products", controllers.GetProductHandler)
+	http.HandleFunc("/delete-products/", controllers.DeleteProductHandeler)
+	http.HandleFunc("/update-products/", controllers.UpdateProductHandler)
 }

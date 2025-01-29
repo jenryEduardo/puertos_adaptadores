@@ -1,12 +1,13 @@
 package main
 
 import (
-	// "github.com/gin-gonic/gin"
-	
-	"ejemplo/practica/Users/infraestructure/routes"
+	"log"
+	"net/http"
+	"ejemplo/practica/src/Users/infraestructure/routes"
 )
-//chuck en la solicitud es long pulling
 
-func main(){
-		routes.RoutesUser()
+func main() {
+	routes.SetupRoutes()
+	log.Println("Servidor escuchando en puerto 8080...")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

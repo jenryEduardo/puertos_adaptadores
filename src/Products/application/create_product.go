@@ -1,7 +1,7 @@
 package application
 
 import (
-	"ejemplo/practica/src/Users/domain"
+	"ejemplo/practica/src/Products/domain"
 )
 
 //realizamos una inyeccion de dependencias que nos permita usar el contrato(metodos) creado en domain

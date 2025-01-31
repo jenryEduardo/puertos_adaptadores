@@ -2,16 +2,16 @@ package controllers
 
 import (
 	"encoding/json"
-	"ejemplo/practica/src/Users/application"
-	"ejemplo/practica/src/Users/domain"
-	"ejemplo/practica/src/Users/infraestructure"
+	"ejemplo/practica/src/Products/application"
+	"ejemplo/practica/src/Products/domain"
+	"ejemplo/practica/src/Products/infraestructure"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
 func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
-	// Verificar que el método es PUT
+	
 	if r.Method != http.MethodPut {
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		return
@@ -45,14 +45,12 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewUpdateProduct(repo)
 
-	// Ejecutar la actualización
 	err = useCase.Execute(productID, &updatedProduct)
 	if err != nil {
 		http.Error(w, "Error al actualizar el producto", http.StatusInternalServerError)
 		return
 	}
 
-	// Responder con éxito
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Producto actualizado correctamente"))
 }

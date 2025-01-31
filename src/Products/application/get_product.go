@@ -1,6 +1,6 @@
 package application
 
-import "ejemplo/practica/src/Users/domain"
+import "ejemplo/practica/src/Products/domain"
 //se crea el servicio hacia el domain
 type GetProduct struct {
 	repo domain.Iproduct

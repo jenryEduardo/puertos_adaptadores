@@ -1,7 +1,7 @@
 package infraestructure
 
 import (
-	"ejemplo/practica/src/Users/domain"
+	"ejemplo/practica/src/Products/domain"
 	"ejemplo/practica/src/core"
 )
 

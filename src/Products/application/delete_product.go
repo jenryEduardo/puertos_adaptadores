@@ -1,6 +1,6 @@
 package application
 
-import "ejemplo/practica/src/Users/domain"
+import "ejemplo/practica/src/Products/domain"
 
 type DeleteProduct struct {
 	rep domain.Iproduct

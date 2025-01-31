@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"ejemplo/practica/src/Users/application"
-	"ejemplo/practica/src/Users/infraestructure"
+	"ejemplo/practica/src/Products/application"
+	"ejemplo/practica/src/Products/infraestructure"
 	"encoding/json"
 	"fmt"
 	"net/http"

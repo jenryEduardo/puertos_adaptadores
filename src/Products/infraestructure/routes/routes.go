@@ -2,7 +2,7 @@ package routes
 
 import (
 	"net/http"
-	"ejemplo/practica/src/Users/infraestructure/controllers"
+	"ejemplo/practica/src/Products/infraestructure/controllers"
 )
 
 func SetupRoutes() {

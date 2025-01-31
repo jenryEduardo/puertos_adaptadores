@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"ejemplo/practica/src/Users/application"
-	"ejemplo/practica/src/Users/infraestructure"
-	// "encoding/json"
+	"ejemplo/practica/src/Products/application"
+	"ejemplo/practica/src/Products/infraestructure"
 	"net/http"
 	"strings"
 )
@@ -28,10 +27,6 @@ func DeleteProductHandeler(w http.ResponseWriter, r *http.Request){
 
 
 	var Nombreproduct string = productName
-	// if err := json.NewDecoder(r.Body).Decode(&Nombreproduct); err != nil {
-	// 	http.Error(w, "Error al procesar el JSON", http.StatusBadRequest)
-	// 	return
-	// }
 
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewDeleteProduct(repo)

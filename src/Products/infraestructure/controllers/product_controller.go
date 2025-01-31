@@ -4,9 +4,9 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"ejemplo/practica/src/Users/application"
-	"ejemplo/practica/src/Users/domain"
-	"ejemplo/practica/src/Users/infraestructure"
+	"ejemplo/practica/src/Products/application"
+	"ejemplo/practica/src/Products/domain"
+	"ejemplo/practica/src/Products/infraestructure"
 )
 
 
@@ -21,10 +21,11 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al procesar el JSON", http.StatusBadRequest)
 		return
 	}
-
+	//inicializamos la bd
 	repo := infraestructure.NewMySQLRepository()
+	//se crea el caso de uso
 	useCase := application.NewCreateProduct(repo)
-
+	//se llama al metodo execute y si falla mandamos un mensaje
 	if err := useCase.Execute(product); err != nil {
 		http.Error(w, "Error al guardar el producto", http.StatusInternalServerError)
 		return

@@ -3,41 +3,45 @@ package controllers
 import (
 	"ejemplo/practica/src/Users/application"
 	"ejemplo/practica/src/Users/infraestructure"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"strings"
-	"fmt"
+	"time"
 )
 
+// DeleteUserHandler maneja la eliminación de un usuario con Long Polling
+func DeleteUserHandler(c *gin.Context) {
+	// Obtener el ID de la URL
+	idUser := c.Param("id")
 
-func DeleteUserHandeler(w http.ResponseWriter, r *http.Request){
-
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	pathParts := strings.Split(r.URL.Path, "/")
-
-	// Validar que haya un nombre después de "/delete-products/"
-	if len(pathParts) < 3 || pathParts[2] == "" {
-		http.Error(w, "id del usuario requerido", http.StatusBadRequest)
-		return
-	}
-
-	idUser := pathParts[2] // Obtener el nombre del producto
-	id,err :=  strconv.Atoi(idUser)
-
+	// Convertir el ID a entero
+	id, err := strconv.Atoi(idUser)
 	if err != nil {
-		fmt.Println("Error: No se pudo convertir a entero:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de usuario inválido"})
 		return
 	}
 
+	// Inicializar repositorio y caso de uso
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewDeleteProduct(repo)
 
-	if err := useCase.Execute(id); err != nil {
-		http.Error(w, "Error al eliminar el producto", http.StatusInternalServerError)
-		return
-}
+	// Mantener la conexión abierta durante el proceso
+	go func() {
+		// Simular un proceso largo de eliminación, por ejemplo, 5 segundos de espera
+		time.Sleep(5 * time.Second)
+
+		// Ejecutar la lógica para eliminar el usuario
+		if err := useCase.Execute(id); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar el usuario"})
+			return
+		}
+		// Responder después de la eliminación exitosa
+		c.JSON(http.StatusOK, gin.H{"message": "Usuario eliminado con éxito"})
+	}()
+
+	// Mantener la conexión abierta durante la operación
+	select {
+	case <-time.After(10 * time.Second): // Esperar hasta 10 segundos
+		c.JSON(http.StatusRequestTimeout, gin.H{"error": "Tiempo de espera agotado"})
+	}
 }

@@ -1,36 +1,34 @@
 package controllers
 
-
 import (
-	"encoding/json"
-	"net/http"
 	"ejemplo/practica/src/Products/application"
 	"ejemplo/practica/src/Products/domain"
 	"ejemplo/practica/src/Products/infraestructure"
+	"github.com/gin-gonic/gin"
+	"net/http"
+
 )
 
-
-func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
+// CreateProductHandlerChunked - Long Polling para creación de productos
+func CreateProductHandler(c *gin.Context) {
 	var product domain.Product
-	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		http.Error(w, "Error al procesar el JSON", http.StatusBadRequest)
-		return
-	}
-	//inicializamos la bd
-	repo := infraestructure.NewMySQLRepository()
-	//se crea el caso de uso
-	useCase := application.NewCreateProduct(repo)
-	//se llama al metodo execute y si falla mandamos un mensaje
-	if err := useCase.Execute(product); err != nil {
-		http.Error(w, "Error al guardar el producto", http.StatusInternalServerError)
+
+	// Decodificar el JSON del cuerpo de la solicitud
+	if err := c.ShouldBindJSON(&product); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error al procesar el JSON"})
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Producto creado con éxito"))
+	// Inicializar la BD y el caso de uso
+	repo := infraestructure.NewMySQLRepository()
+	useCase := application.NewCreateProduct(repo)
+
+	// Ejecutar la lógica de creación del producto
+	if err := useCase.Execute(product); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar el producto"})
+		return
+	}
+
+	// Devolver respuesta JSON estándar
+	c.JSON(http.StatusOK, gin.H{"message": "Producto creado con éxito"})
 }

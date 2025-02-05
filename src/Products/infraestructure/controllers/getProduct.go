@@ -3,27 +3,26 @@ package controllers
 import (
 	"ejemplo/practica/src/Products/application"
 	"ejemplo/practica/src/Products/infraestructure"
-	"encoding/json"
-	"fmt"
+
+	"github.com/gin-gonic/gin"
 	"net/http"
+
 )
 
-func GetProductHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "metodo no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-	
+func GetProductHandler(c *gin.Context) {
+	// Configurar la cabecera correctamente
+	c.Writer.Header().Set("Content-Type", "application/json")
+
+	// Obtener productos desde la base de datos
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewGetProduct(repo)
+
 	products, err := useCase.Execute()
 	if err != nil {
-		fmt.Printf("error al obtner los productos", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo obtener los productos"})
 		return
 	}
 
-	productsJson, err := json.Marshal(products)
-
-	w.WriteHeader(http.StatusCreated)
-	fmt.Printf(string(productsJson))
+	// Enviar la respuesta como un JSON completo
+	c.JSON(http.StatusOK, products)
 }

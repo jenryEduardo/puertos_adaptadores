@@ -2,14 +2,31 @@ package main
 
 import (
 	"log"
-	"net/http"
-	productRoutes "ejemplo/practica/src/Products/infraestructure/routes" // Renombrado
-	userRoutes "ejemplo/practica/src/Users/infraestructure/user_rou"     // Renombrado
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
+	productRoutes "ejemplo/practica/src/Products/infraestructure/routes"
+	userRoutes "ejemplo/practica/src/Users/infraestructure/user_rou"
 )
 
-func main(){
-	productRoutes.SetupRoutes()
-	userRoutes.SetupRoutesUsers()
-	log.Println("Servidor escuchando en puerto 8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+func main() {
+	router := gin.Default()
+
+	// Configurar CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4200"}, // Permitir Angular en puerto 4200
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour, // Cache de preflight request
+	}))
+
+	// Configurar rutas de productos y usuarios
+	productRoutes.SetupRoutes(router)
+	userRoutes.SetupRoutesUsers(router)
+
+	port := ":8080"
+	log.Println("Servidor escuchando en el puerto", port)
+	log.Fatal(router.Run(port))
 }

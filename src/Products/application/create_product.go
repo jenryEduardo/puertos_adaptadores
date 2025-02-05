@@ -17,3 +17,7 @@ func NewCreateProduct(repo domain.Iproduct) *CreateProduct {
 func (cp *CreateProduct) Execute(p domain.Product)error{
 	return cp.repo.Save(&p)
 }
+
+
+//realizar una infografia de esos 3 modelos
+//mvc mvp mvm

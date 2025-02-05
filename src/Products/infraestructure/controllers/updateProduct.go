@@ -1,56 +1,54 @@
 package controllers
 
 import (
-	"encoding/json"
 	"ejemplo/practica/src/Products/application"
 	"ejemplo/practica/src/Products/domain"
 	"ejemplo/practica/src/Products/infraestructure"
+	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"strings"
+	"time"
 )
 
-func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
-	
-	if r.Method != http.MethodPut {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Extraer el ID del producto desde la URL
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) < 3 || pathParts[2] == "" {
-		http.Error(w, "ID del producto requerido en la URL", http.StatusBadRequest)
-		return
-	}
-
-	// Convertir el ID a entero
-	productID, err := strconv.Atoi(pathParts[2])
+// UpdateProductHandlerChunked - Long Polling para actualización de productos
+func UpdateProductHandler(c *gin.Context) {
+	// Obtener el ID del producto desde los parámetros de la URL
+	productIDStr := c.Param("id")
+	productID, err := strconv.Atoi(productIDStr)
 	if err != nil {
-		http.Error(w, "ID del producto inválido", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID del producto inválido"})
 		return
 	}
 
-	print(productID)
-
-	// Decodificar el JSON del cuerpo de la solicitud
 	var updatedProduct domain.Product
-	err = json.NewDecoder(r.Body).Decode(&updatedProduct)
-	if err != nil {
-		http.Error(w, "Error al decodificar el JSON", http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&updatedProduct); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error al decodificar el JSON"})
 		return
 	}
 
-	// Crear repositorio e instancia del caso de uso
+	
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewUpdateProduct(repo)
 
-	err = useCase.Execute(productID, &updatedProduct)
-	if err != nil {
-		http.Error(w, "Error al actualizar el producto", http.StatusInternalServerError)
+	// Configurar encabezados para chunked
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.Header().Set("Transfer-Encoding", "chunked")
+	encoder := json.NewEncoder(c.Writer)
+
+	// Enviar primer chunk indicando que la actualización ha comenzado
+	encoder.Encode(gin.H{"status": "Iniciando la actualización del producto"})
+	c.Writer.Flush()
+	time.Sleep(1 * time.Second) 
+
+	
+	if err := useCase.Execute(productID, &updatedProduct); err != nil {
+		encoder.Encode(gin.H{"error": "Error al actualizar el producto"})
+		c.Writer.Flush()
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Producto actualizado correctamente"))
+
+	encoder.Encode(gin.H{"message": "Producto actualizado correctamente"})
+	c.Writer.Flush()
 }

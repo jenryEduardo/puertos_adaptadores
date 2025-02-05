@@ -1,13 +1,19 @@
 package routes
 
 import (
-	"net/http"
 	"ejemplo/practica/src/Users/infraestructure/controllers"
+	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutesUsers() {
-	http.HandleFunc("/users", controllers.CreateUsersHandler)
-	http.HandleFunc("/view-users", controllers.GetUserHandler)
-	http.HandleFunc("/delete-users/", controllers.DeleteUserHandeler)
-	http.HandleFunc("/update-users/", controllers.EditUserHandler)
+// SetupRoutesUsers configura las rutas para usuarios
+func SetupRoutesUsers(router *gin.Engine) {
+
+	routes:=router.Group("/users")
+
+	{
+		routes.POST("/", controllers.CreateUsersHandler)   // Crear usuario
+		routes.GET("/", controllers.GetUserHandler)        // Obtener usuarios
+		routes.DELETE("/:id", controllers.DeleteUserHandler) // Eliminar usuario por ID
+		routes.PUT("/:id", controllers.EditUserHandler)    // Actualizar usuario por ID
+	}
 }

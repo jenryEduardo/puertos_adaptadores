@@ -12,7 +12,7 @@ type MySQLRepository struct {
 
 
 func NewMySQLRepository() *MySQLRepository {
-	conn := core.GetDBPool()
+	conn := core. GetDBPool()
 	return &MySQLRepository{conn: conn}
 }
 
@@ -32,9 +32,6 @@ func (r *MySQLRepository) Delete(p int)error{
 func (r *MySQLRepository) Update(id int,p *domain.User)error{
 	query := "UPDATE Users SET nombre = ?, correo = ?, contraseña=? WHERE id = ?"
     _, err := r.conn.DB.Exec(query, p.Nombre, p.Correo,p.Contraseña,id)
-    if err != nil {
-        return err
-    }
 	return err
 }
 

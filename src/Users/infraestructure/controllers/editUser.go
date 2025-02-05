@@ -2,56 +2,52 @@ package controllers
 
 import (
 	"ejemplo/practica/src/Users/application"
-	"ejemplo/practica/src/Users/infraestructure"
 	"ejemplo/practica/src/Users/domain"
-	"encoding/json"
-	"fmt"
+	"ejemplo/practica/src/Users/infraestructure"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"strings"
+	"time"
 )
 
-func EditUserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "metodo no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Extraer el ID del producto desde la URL
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) < 3 || pathParts[2] == "" {
-		http.Error(w, "ID del producto requerido en la URL", http.StatusBadRequest)
-		return
-	}
-
-	// Convertir el ID a entero
-	userID, err := strconv.Atoi(pathParts[2])
+// EditUserHandler maneja la actualización de un usuario por ID con Long Polling
+func EditUserHandler(c *gin.Context) {
+	// Obtener el ID de la URL
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		http.Error(w, "ID del producto inválido", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
 		return
 	}
 
-	var id int = userID
-
-	
-	// Decodificar el JSON del cuerpo de la solicitud
+	// Decodificar el JSON de la solicitud
 	var updatedUser domain.User
-	err = json.NewDecoder(r.Body).Decode(&updatedUser)
-	if err != nil {
-		http.Error(w, "Error al decodificar el JSON", http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&updatedUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error al procesar el JSON"})
 		return
 	}
 
+	// Inicializar repositorio y caso de uso
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewEditUser(repo)
 
-	usuario := useCase.Execute(id,&updatedUser)
+	// Mantener la conexión abierta durante el proceso
+	go func() {
+		// Simulamos una demora de 5 segundos (por ejemplo, para hacer validaciones, actualizaciones en base de datos, etc.)
+		time.Sleep(5 * time.Second)
 
-	if(usuario!=nil){
-		fmt.Println("ocurrio un error al actulizar el usuario")
-		return
+		// Ejecutar la actualización
+		if err := useCase.Execute(id, &updatedUser); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el usuario"})
+			return
+		}
+		// Responder después de la actualización exitosa
+		c.JSON(http.StatusOK, gin.H{"message": "Usuario actualizado con éxito"})
+	}()
+
+	// Mantener la conexión abierta durante el proceso
+	select {
+	case <-time.After(10 * time.Second): // Espera de 10 segundos antes de que se agote el tiempo de espera
+		c.JSON(http.StatusRequestTimeout, gin.H{"error": "Tiempo de espera agotado"})
 	}
-
-	fmt.Println("usuario actualizado")
-
 }

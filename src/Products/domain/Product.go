@@ -5,5 +5,5 @@
 		Precio int16
 	}
 
-
+	
 	//implementarle long y short poolling		

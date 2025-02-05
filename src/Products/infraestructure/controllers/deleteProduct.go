@@ -3,36 +3,41 @@ package controllers
 import (
 	"ejemplo/practica/src/Products/application"
 	"ejemplo/practica/src/Products/infraestructure"
+	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
+	"time"
 )
 
+// DeleteProductHandlerChunked - Long Polling para eliminación de productos
+func DeleteProductHandler(c *gin.Context) {
+	productName := c.Param("name")
 
-func DeleteProductHandeler(w http.ResponseWriter, r *http.Request){
-
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+	if productName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nombre del producto requerido"})
 		return
 	}
-
-	pathParts := strings.Split(r.URL.Path, "/")
-
-	// Validar que haya un nombre después de "/delete-products/"
-	if len(pathParts) < 3 || pathParts[2] == "" {
-		http.Error(w, "Nombre del producto requerido", http.StatusBadRequest)
-		return
-	}
-
-	productName := pathParts[2] // Obtener el nombre del producto
-
-
-	var Nombreproduct string = productName
 
 	repo := infraestructure.NewMySQLRepository()
 	useCase := application.NewDeleteProduct(repo)
 
-	if err := useCase.Execute(Nombreproduct); err != nil {
-		http.Error(w, "Error al guardar el producto", http.StatusInternalServerError)
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.Header().Set("Transfer-Encoding", "chunked")
+	encoder := json.NewEncoder(c.Writer)
+
+	// Notificación inicial
+	encoder.Encode(gin.H{"status": "Recibiendo solicitud para eliminar producto"})
+	c.Writer.Flush()
+	time.Sleep(2 * time.Second)
+
+	// Intento de eliminación
+	if err := useCase.Execute(productName); err != nil {
+		encoder.Encode(gin.H{"error": "Error al eliminar el producto"})
+		c.Writer.Flush()
 		return
-}
+	}
+
+	// Confirmación de eliminación
+	encoder.Encode(gin.H{"message": "Producto eliminado correctamente"})
+	c.Writer.Flush()
 }
